@@ -1,4 +1,3 @@
--- name: UserLogin :one
+-- name: GetUserByEmail :one
 SELECT * FROM users
-WHERE id = $1 OR email = $2
-LIMIT 1; 
+WHERE email = $1 LIMIT 1;

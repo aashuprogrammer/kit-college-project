@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS payments;
+DROP TABLE IF EXISTS admissions;
+DROP TABLE IF EXISTS courses;

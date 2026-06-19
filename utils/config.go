@@ -7,11 +7,14 @@ import (
 )
 
 type Config struct {
-	DBUrl              string        `mapstructure:"DATABASE_URL"`
-	Port               int16         `mapstructure:"PORT"`
-	TokenSymmectricKey string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	TokenDuration      time.Duration `mapstructure:"TOKEN_DURATION"`
-	ProfilesFolder     string        `mapstructure:"PROFILES_FOLDER"`
+	DBUrl               string        `mapstructure:"DATABASE_URL"`
+	Port                int16         `mapstructure:"PORT"`
+	TokenSymmectricKey  string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	TokenDuration       time.Duration `mapstructure:"TOKEN_DURATION"`
+	ProfilesFolder      string        `mapstructure:"PROFILES_FOLDER"`
+	CashfreeAppID       string        `mapstructure:"CASHFREE_APP_ID"`
+	CashfreeSecretKey   string        `mapstructure:"CASHFREE_SECRET_KEY"`
+	CashfreeEnvironment string        `mapstructure:"CASHFREE_ENVIRONMENT"` // sandbox or production
 }
 
 func LoadConfig(path string) (Config, error) {

@@ -9,19 +9,13 @@ import (
 	"context"
 )
 
-const userLogin = `-- name: UserLogin :one
+const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, password FROM users
-WHERE id = $1 OR email = $2
-LIMIT 1
+WHERE email = $1 LIMIT 1
 `
 
-type UserLoginParams struct {
-	ID    int32  `json:"id"`
-	Email string `json:"email"`
-}
-
-func (q *Queries) UserLogin(ctx context.Context, arg UserLoginParams) (User, error) {
-	row := q.db.QueryRow(ctx, userLogin, arg.ID, arg.Email)
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
 	var i User
 	err := row.Scan(&i.ID, &i.Email, &i.Password)
 	return i, err

@@ -6,6 +6,7 @@ import (
 
 	"github.com/aashuprogrammer/fee-management-system/db/pgdb"
 	"github.com/gofiber/fiber/v2"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type userLoginRequest struct {
@@ -29,9 +30,7 @@ func (server *Server) login(c *fiber.Ctx) error {
 	if validationErrors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(validationErrors)
 	}
-	users, err := server.store.UserLogin(c.Context(), pgdb.UserLoginParams{
-		Email: req.Email,
-	})
+	users, err := server.store.GetUserByEmail(c.Context(), req.Email)
 
 	if err != nil {
 		fmt.Println(pgdb.ErrorCode(err))
@@ -40,7 +39,9 @@ func (server *Server) login(c *fiber.Ctx) error {
 		}
 		return InternalServerError(err.Error())
 	}
-	if users.Password != req.Password {
+	
+	err = bcrypt.CompareHashAndPassword([]byte(users.Password), []byte(req.Password))
+	if err != nil {
 		return &fiber.Error{Code: fiber.StatusUnauthorized, Message: "password is wrong"}
 	}
 
@@ -55,3 +56,4 @@ func (server *Server) login(c *fiber.Ctx) error {
 		ID:             payload.ID,
 	})
 }
+

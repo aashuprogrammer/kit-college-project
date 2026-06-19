@@ -4,6 +4,53 @@
 
 package pgdb
 
+import (
+	"github.com/jackc/pgx/v5/pgtype"
+)
+
+type Admission struct {
+	ID                        int32              `json:"id"`
+	CourseCode                string             `json:"course_code"`
+	FullName                  string             `json:"full_name"`
+	FatherName                string             `json:"father_name"`
+	MotherName                string             `json:"mother_name"`
+	Dob                       pgtype.Date        `json:"dob"`
+	Gender                    string             `json:"gender"`
+	Religion                  string             `json:"religion"`
+	Category                  string             `json:"category"`
+	SubCategory               pgtype.Text        `json:"sub_category"`
+	CasteCertificateNumber    pgtype.Text        `json:"caste_certificate_number"`
+	IsEws                     bool               `json:"is_ews"`
+	DomicileCertificateNumber pgtype.Text        `json:"domicile_certificate_number"`
+	DomicileState             string             `json:"domicile_state"`
+	Mobile                    string             `json:"mobile"`
+	Email                     string             `json:"email"`
+	Status                    string             `json:"status"`
+	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Course struct {
+	Code      string         `json:"code"`
+	Name      string         `json:"name"`
+	FeeAmount pgtype.Numeric `json:"fee_amount"`
+}
+
+type Payment struct {
+	ID               int32              `json:"id"`
+	AdmissionID      int32              `json:"admission_id"`
+	OrderID          string             `json:"order_id"`
+	Amount           pgtype.Numeric     `json:"amount"`
+	Currency         string             `json:"currency"`
+	PaymentSessionID string             `json:"payment_session_id"`
+	CfPaymentID      pgtype.Text        `json:"cf_payment_id"`
+	Status           string             `json:"status"`
+	PaymentMethod    pgtype.Text        `json:"payment_method"`
+	TransactionTime  pgtype.Timestamptz `json:"transaction_time"`
+	CreatedAt        pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
 type User struct {
 	ID       int32  `json:"id"`
 	Email    string `json:"email"`

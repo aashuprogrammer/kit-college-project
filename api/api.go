@@ -17,11 +17,12 @@ import (
 )
 
 type Server struct {
-	app    *fiber.App
-	store  pgdb.Store
-	valid  *validator.Validate
-	config utils.Config
-	token  token.Maker
+	app      *fiber.App
+	store    pgdb.Store
+	valid    *validator.Validate
+	config   utils.Config
+	token    token.Maker
+	cfClient *CashfreeClient
 }
 
 func NewServer(config utils.Config, store pgdb.Store, tokenMaker token.Maker) (*Server, error) {
@@ -33,10 +34,11 @@ func NewServer(config utils.Config, store pgdb.Store, tokenMaker token.Maker) (*
 		return nil, errors.New("tokenMaker cannot be nil")
 	}
 	server := &Server{
-		valid:  validator.New(),
-		config: config,
-		store:  store,
-		token:  tokenMaker,
+		valid:    validator.New(),
+		config:   config,
+		store:    store,
+		token:    tokenMaker,
+		cfClient: NewCashfreeClient(config.CashfreeAppID, config.CashfreeSecretKey, config.CashfreeEnvironment),
 	}
 	server.setupApi()
 	return server, nil
@@ -77,6 +79,12 @@ func (server *Server) setupApi() {
 	})
 
 	app.Post("/login", server.login)
+
+	// Admission & Payment endpoints
+	app.Get("/courses", server.listCourses)
+	app.Post("/admissions", server.createAdmission)
+	app.Post("/payments/verify", server.verifyPayment)
+	app.Post("/payments/webhook", server.handleWebhook)
 
 	server.app = app
 }

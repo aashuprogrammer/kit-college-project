@@ -9,7 +9,15 @@ import (
 )
 
 type Querier interface {
-	UserLogin(ctx context.Context, arg UserLoginParams) (User, error)
+	CreateAdmission(ctx context.Context, arg CreateAdmissionParams) (Admission, error)
+	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
+	GetAdmission(ctx context.Context, id int32) (Admission, error)
+	GetCourse(ctx context.Context, code string) (Course, error)
+	GetPaymentByOrderID(ctx context.Context, orderID string) (Payment, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	ListCourses(ctx context.Context) ([]Course, error)
+	UpdateAdmissionStatus(ctx context.Context, arg UpdateAdmissionStatusParams) (Admission, error)
+	UpdatePaymentStatus(ctx context.Context, arg UpdatePaymentStatusParams) (Payment, error)
 }
 
 var _ Querier = (*Queries)(nil)
