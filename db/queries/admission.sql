@@ -1,6 +1,7 @@
 -- name: GetCourse :one
 SELECT * FROM courses
-WHERE code = $1 LIMIT 1;
+WHERE id = $1 LIMIT 1;
+
 
 -- name: ListCourses :many
 SELECT * FROM courses
@@ -8,7 +9,7 @@ ORDER BY name;
 
 -- name: CreateAdmission :one
 INSERT INTO admissions (
-  course_code,
+  course_id,
   full_name,
   father_name,
   mother_name,
@@ -66,3 +67,8 @@ SET status = $2,
     updated_at = NOW()
 WHERE id = $1
 RETURNING *;
+
+-- name: ListAdmissions :many
+SELECT * FROM admissions
+ORDER BY created_at DESC;
+

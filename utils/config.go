@@ -12,21 +12,25 @@ type Config struct {
 	TokenSymmectricKey  string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
 	TokenDuration       time.Duration `mapstructure:"TOKEN_DURATION"`
 	ProfilesFolder      string        `mapstructure:"PROFILES_FOLDER"`
-	CashfreeAppID       string        `mapstructure:"CASHFREE_APP_ID"`
-	CashfreeSecretKey   string        `mapstructure:"CASHFREE_SECRET_KEY"`
-	CashfreeEnvironment string        `mapstructure:"CASHFREE_ENVIRONMENT"` // sandbox or production
+	CashfreeAppID       string        `mapstructure:"CASHFREE_CLIENT_ID"`
+	CashfreeSecretKey   string        `mapstructure:"CASHFREE_CLIENT_SECRET"`
+	CashfreeEnvironment string        `mapstructure:"CASHFREE_ENV"` // sandbox or production
 }
 
 func LoadConfig(path string) (Config, error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+	// Try loading .env first
+	viper.SetConfigFile(path + "/.env")
 	viper.AutomaticEnv()
 
 	var config Config
 	err := viper.ReadInConfig()
 	if err != nil {
-		return config, err
+		// Fallback to app.env
+		viper.SetConfigFile(path + "/app.env")
+		err = viper.ReadInConfig()
+		if err != nil {
+			return config, err
+		}
 	}
 	err = viper.Unmarshal(&config)
 

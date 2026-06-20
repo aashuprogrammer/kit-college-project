@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/aashuprogrammer/fee-management-system/db/pgdb"
 	"github.com/aashuprogrammer/fee-management-system/token"
@@ -86,5 +87,32 @@ func (server *Server) setupApi() {
 	app.Post("/payments/verify", server.verifyPayment)
 	app.Post("/payments/webhook", server.handleWebhook)
 
+	// Admin admissions list endpoint (protected)
+	app.Get("/admissions", server.authMiddleware, server.listAdmissions)
+
+	// Serve static files from the frontend project folder
+	app.Static("/", "../kit-cillege-ui/dist")
+
 	server.app = app
+}
+
+func (server *Server) authMiddleware(c *fiber.Ctx) error {
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "missing authorization header"})
+	}
+
+	fields := strings.Fields(authHeader)
+	if len(fields) < 2 || strings.ToLower(fields[0]) != "bearer" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid authorization header format"})
+	}
+
+	tokenString := fields[1]
+	payload, err := server.token.VerifyToken(tokenString)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "invalid or expired token"})
+	}
+
+	c.Locals("user_payload", payload)
+	return c.Next()
 }

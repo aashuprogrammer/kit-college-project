@@ -11,7 +11,7 @@ import (
 )
 
 type createAdmissionRequest struct {
-	CourseCode                string `json:"course_code" validate:"required"`
+	CourseID                  int32  `json:"course_id" validate:"required"`
 	FullName                  string `json:"full_name" validate:"required"`
 	FatherName                string `json:"father_name" validate:"required"`
 	MotherName                string `json:"mother_name" validate:"required"`
@@ -26,7 +26,7 @@ type createAdmissionRequest struct {
 	DomicileState             string `json:"domicile_state" validate:"required"`
 	Mobile                    string `json:"mobile" validate:"required"`
 	Email                     string `json:"email" validate:"required,email"`
-	ReturnURL                 string `json:"return_url" validate:"required,url"`
+	ReturnURL                 string `json:"return_url" validate:"omitempty"`
 }
 
 type createAdmissionResponse struct {
@@ -49,19 +49,6 @@ type verifyPaymentResponse struct {
 	AdmissionStatus string  `json:"admission_status"`
 }
 
-// Helpers for numeric parsing
-func toNumeric(amount float64) pgtype.Numeric {
-	var num pgtype.Numeric
-	_ = num.Scan(fmt.Sprintf("%.2f", amount))
-	return num
-}
-
-func fromNumeric(num pgtype.Numeric) float64 {
-	var val float64
-	_ = num.Scan(&val)
-	return val
-}
-
 func (server *Server) createAdmission(c *fiber.Ctx) error {
 	var req createAdmissionRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -74,10 +61,10 @@ func (server *Server) createAdmission(c *fiber.Ctx) error {
 	}
 
 	// 1. Verify that the selected course exists
-	course, err := server.store.GetCourse(c.Context(), req.CourseCode)
+	course, err := server.store.GetCourse(c.Context(), req.CourseID)
 	if err != nil {
 		if pgdb.ErrorCode(err) == pgdb.ErrorNoRow {
-			return BadRequestError("invalid course code: course not found")
+			return BadRequestError("invalid course id: course not found")
 		}
 		return InternalServerError("failed to look up course: " + err.Error())
 	}
@@ -90,7 +77,7 @@ func (server *Server) createAdmission(c *fiber.Ctx) error {
 
 	// 3. Create a pending admission record
 	admission, err := server.store.CreateAdmission(c.Context(), pgdb.CreateAdmissionParams{
-		CourseCode:                req.CourseCode,
+		CourseID:                  req.CourseID,
 		FullName:                  req.FullName,
 		FatherName:                req.FatherName,
 		MotherName:                req.MotherName,
@@ -113,7 +100,12 @@ func (server *Server) createAdmission(c *fiber.Ctx) error {
 
 	// 4. Generate unique order ID
 	orderID := fmt.Sprintf("adm_%d_%d", admission.ID, time.Now().Unix())
-	courseFee := fromNumeric(course.FeeAmount)
+	courseFee := float64(course.FeeAmount)
+
+	returnURL := req.ReturnURL
+	if returnURL == "" {
+		returnURL = "https://example.com/payment-status"
+	}
 
 	// 5. Initiate Order with Cashfree
 	cfOrder, err := server.cfClient.CreateOrder(
@@ -124,7 +116,7 @@ func (server *Server) createAdmission(c *fiber.Ctx) error {
 		req.FullName,
 		req.Email,
 		req.Mobile,
-		req.ReturnURL,
+		returnURL,
 	)
 	if err != nil {
 		// Clean up by marking admission as FAILED or deleting it (let's mark as FAILED)
@@ -139,7 +131,7 @@ func (server *Server) createAdmission(c *fiber.Ctx) error {
 	_, err = server.store.CreatePayment(c.Context(), pgdb.CreatePaymentParams{
 		AdmissionID:      admission.ID,
 		OrderID:          orderID,
-		Amount:           toNumeric(courseFee),
+		Amount:           course.FeeAmount,
 		Currency:         "INR",
 		PaymentSessionID: cfOrder.PaymentSessionID,
 		Status:           "PENDING",
@@ -362,3 +354,12 @@ func (server *Server) handleWebhook(c *fiber.Ctx) error {
 
 	return c.SendStatus(fiber.StatusOK)
 }
+
+func (server *Server) listAdmissions(c *fiber.Ctx) error {
+	admissions, err := server.store.ListAdmissions(c.Context())
+	if err != nil {
+		return InternalServerError("failed to retrieve admissions: " + err.Error())
+	}
+	return c.JSON(admissions)
+}
+

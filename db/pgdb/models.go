@@ -10,7 +10,7 @@ import (
 
 type Admission struct {
 	ID                        int32              `json:"id"`
-	CourseCode                string             `json:"course_code"`
+	CourseID                  int32              `json:"course_id"`
 	FullName                  string             `json:"full_name"`
 	FatherName                string             `json:"father_name"`
 	MotherName                string             `json:"mother_name"`
@@ -31,16 +31,17 @@ type Admission struct {
 }
 
 type Course struct {
-	Code      string         `json:"code"`
-	Name      string         `json:"name"`
-	FeeAmount pgtype.Numeric `json:"fee_amount"`
+	ID         int32  `json:"id"`
+	CourseCode string `json:"course_code"`
+	Name       string `json:"name"`
+	FeeAmount  int32  `json:"fee_amount"`
 }
 
 type Payment struct {
 	ID               int32              `json:"id"`
 	AdmissionID      int32              `json:"admission_id"`
 	OrderID          string             `json:"order_id"`
-	Amount           pgtype.Numeric     `json:"amount"`
+	Amount           int32              `json:"amount"`
 	Currency         string             `json:"currency"`
 	PaymentSessionID string             `json:"payment_session_id"`
 	CfPaymentID      pgtype.Text        `json:"cf_payment_id"`
