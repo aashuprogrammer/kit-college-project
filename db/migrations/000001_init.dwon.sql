@@ -1,4 +1,5 @@
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS admissions;
+DROP TABLE IF EXISTS registrations;
 DROP TABLE IF EXISTS courses;
 DROP TABLE IF EXISTS users;

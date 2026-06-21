@@ -11,8 +11,19 @@ CREATE TABLE courses (
   fee_amount INT NOT NULL
 );
 
+CREATE TABLE registrations (
+  id SERIAL PRIMARY KEY,
+  registration_number TEXT UNIQUE NOT NULL,
+  course_id INT NOT NULL REFERENCES courses(id),
+  full_name TEXT NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  mobile TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE admissions (
   id SERIAL PRIMARY KEY,
+  registration_number TEXT UNIQUE NOT NULL REFERENCES registrations(registration_number),
   course_id INT NOT NULL REFERENCES courses(id),
   full_name TEXT NOT NULL,
   father_name TEXT NOT NULL,
@@ -28,6 +39,10 @@ CREATE TABLE admissions (
   domicile_state TEXT NOT NULL,
   mobile TEXT NOT NULL,
   email TEXT NOT NULL,
+  aadhar_card_url TEXT NOT NULL,
+  father_aadhar_card_url TEXT NOT NULL,
+  tenth_marksheet_url TEXT NOT NULL,
+  twelfth_marksheet_url TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'PENDING',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

@@ -24,6 +24,7 @@ type Server struct {
 	config   utils.Config
 	token    token.Maker
 	cfClient *CashfreeClient
+	r2Client *utils.R2Client
 }
 
 func NewServer(config utils.Config, store pgdb.Store, tokenMaker token.Maker) (*Server, error) {
@@ -34,12 +35,18 @@ func NewServer(config utils.Config, store pgdb.Store, tokenMaker token.Maker) (*
 	if tokenMaker == nil {
 		return nil, errors.New("tokenMaker cannot be nil")
 	}
+	r2Client, err := utils.NewR2Client(config.R2AccountID, config.R2AccessKeyID, config.R2SecretAccessKey, config.R2BucketName, config.R2PublicURL, "./uploads")
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize R2 client: %w", err)
+	}
+
 	server := &Server{
 		valid:    validator.New(),
 		config:   config,
 		store:    store,
 		token:    tokenMaker,
 		cfClient: NewCashfreeClient(config.CashfreeAppID, config.CashfreeSecretKey, config.CashfreeEnvironment),
+		r2Client: r2Client,
 	}
 	server.setupApi()
 	return server, nil
@@ -57,7 +64,7 @@ func (server *Server) setupApi() {
 	app := fiber.New(fiber.Config{
 		ServerHeader:  "Inflection-Fiber",
 		ErrorHandler:  errorHandler,
-		BodyLimit:     2 * 1024 * 1024,
+		BodyLimit:     50 * 1024 * 1024,
 		CaseSensitive: true,
 	})
 
@@ -81,6 +88,10 @@ func (server *Server) setupApi() {
 
 	app.Post("/login", server.login)
 
+	// Student Registration endpoints
+	app.Post("/register", server.register)
+	app.Get("/registrations/:reg_num", server.getRegistration)
+
 	// Admission & Payment endpoints
 	app.Get("/courses", server.listCourses)
 	app.Post("/admissions", server.createAdmission)
@@ -89,6 +100,9 @@ func (server *Server) setupApi() {
 
 	// Admin admissions list endpoint (protected)
 	app.Get("/admissions", server.authMiddleware, server.listAdmissions)
+
+	// Serve uploaded files
+	app.Static("/uploads", "./uploads")
 
 	// Serve static files from the frontend project folder
 	app.Static("/", "../kit-cillege-ui/dist")

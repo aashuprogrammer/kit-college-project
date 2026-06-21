@@ -9,6 +9,7 @@ ORDER BY name;
 
 -- name: CreateAdmission :one
 INSERT INTO admissions (
+  registration_number,
   course_id,
   full_name,
   father_name,
@@ -24,11 +25,39 @@ INSERT INTO admissions (
   domicile_state,
   mobile,
   email,
+  aadhar_card_url,
+  father_aadhar_card_url,
+  tenth_marksheet_url,
+  twelfth_marksheet_url,
   status
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
 )
 RETURNING *;
+
+-- name: CreateRegistration :one
+INSERT INTO registrations (
+  registration_number,
+  course_id,
+  full_name,
+  email,
+  mobile
+) VALUES (
+  $1, $2, $3, $4, $5
+)
+RETURNING *;
+
+-- name: GetRegistrationByNumber :one
+SELECT * FROM registrations
+WHERE registration_number = $1 LIMIT 1;
+
+-- name: GetRegistrationByEmail :one
+SELECT * FROM registrations
+WHERE email = $1 LIMIT 1;
+
+-- name: GetRegistrationCountForCourseAndYear :one
+SELECT COUNT(*) FROM registrations
+WHERE course_id = $1 AND registration_number LIKE $2;
 
 -- name: GetAdmission :one
 SELECT * FROM admissions

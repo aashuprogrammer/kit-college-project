@@ -15,6 +15,12 @@ type Config struct {
 	CashfreeAppID       string        `mapstructure:"CASHFREE_CLIENT_ID"`
 	CashfreeSecretKey   string        `mapstructure:"CASHFREE_CLIENT_SECRET"`
 	CashfreeEnvironment string        `mapstructure:"CASHFREE_ENV"` // sandbox or production
+	R2AccountID         string        `mapstructure:"R2_ACCOUNT_ID"`
+	R2AccessKeyID       string        `mapstructure:"R2_ACCESS_KEY_ID"`
+	R2SecretAccessKey   string        `mapstructure:"R2_SECRET_ACCESS_KEY"`
+	R2BucketName        string        `mapstructure:"R2_BUCKET_NAME"`
+	R2PublicURL         string        `mapstructure:"R2_PUBLIC_URL"`
+	CollegeCode         string        `mapstructure:"COLLEGE_CODE"`
 }
 
 func LoadConfig(path string) (Config, error) {

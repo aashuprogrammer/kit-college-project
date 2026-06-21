@@ -13,6 +13,7 @@ import (
 
 const createAdmission = `-- name: CreateAdmission :one
 INSERT INTO admissions (
+  registration_number,
   course_id,
   full_name,
   father_name,
@@ -28,14 +29,19 @@ INSERT INTO admissions (
   domicile_state,
   mobile,
   email,
+  aadhar_card_url,
+  father_aadhar_card_url,
+  tenth_marksheet_url,
+  twelfth_marksheet_url,
   status
 ) VALUES (
-  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16
+  $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
 )
-RETURNING id, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, status, created_at, updated_at
+RETURNING id, registration_number, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, aadhar_card_url, father_aadhar_card_url, tenth_marksheet_url, twelfth_marksheet_url, status, created_at, updated_at
 `
 
 type CreateAdmissionParams struct {
+	RegistrationNumber        string      `json:"registration_number"`
 	CourseID                  int32       `json:"course_id"`
 	FullName                  string      `json:"full_name"`
 	FatherName                string      `json:"father_name"`
@@ -51,11 +57,16 @@ type CreateAdmissionParams struct {
 	DomicileState             string      `json:"domicile_state"`
 	Mobile                    string      `json:"mobile"`
 	Email                     string      `json:"email"`
+	AadharCardUrl             string      `json:"aadhar_card_url"`
+	FatherAadharCardUrl       string      `json:"father_aadhar_card_url"`
+	TenthMarksheetUrl         string      `json:"tenth_marksheet_url"`
+	TwelfthMarksheetUrl       string      `json:"twelfth_marksheet_url"`
 	Status                    string      `json:"status"`
 }
 
 func (q *Queries) CreateAdmission(ctx context.Context, arg CreateAdmissionParams) (Admission, error) {
 	row := q.db.QueryRow(ctx, createAdmission,
+		arg.RegistrationNumber,
 		arg.CourseID,
 		arg.FullName,
 		arg.FatherName,
@@ -71,11 +82,16 @@ func (q *Queries) CreateAdmission(ctx context.Context, arg CreateAdmissionParams
 		arg.DomicileState,
 		arg.Mobile,
 		arg.Email,
+		arg.AadharCardUrl,
+		arg.FatherAadharCardUrl,
+		arg.TenthMarksheetUrl,
+		arg.TwelfthMarksheetUrl,
 		arg.Status,
 	)
 	var i Admission
 	err := row.Scan(
 		&i.ID,
+		&i.RegistrationNumber,
 		&i.CourseID,
 		&i.FullName,
 		&i.FatherName,
@@ -91,6 +107,10 @@ func (q *Queries) CreateAdmission(ctx context.Context, arg CreateAdmissionParams
 		&i.DomicileState,
 		&i.Mobile,
 		&i.Email,
+		&i.AadharCardUrl,
+		&i.FatherAadharCardUrl,
+		&i.TenthMarksheetUrl,
+		&i.TwelfthMarksheetUrl,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -148,8 +168,50 @@ func (q *Queries) CreatePayment(ctx context.Context, arg CreatePaymentParams) (P
 	return i, err
 }
 
+const createRegistration = `-- name: CreateRegistration :one
+INSERT INTO registrations (
+  registration_number,
+  course_id,
+  full_name,
+  email,
+  mobile
+) VALUES (
+  $1, $2, $3, $4, $5
+)
+RETURNING id, registration_number, course_id, full_name, email, mobile, created_at
+`
+
+type CreateRegistrationParams struct {
+	RegistrationNumber string `json:"registration_number"`
+	CourseID           int32  `json:"course_id"`
+	FullName           string `json:"full_name"`
+	Email              string `json:"email"`
+	Mobile             string `json:"mobile"`
+}
+
+func (q *Queries) CreateRegistration(ctx context.Context, arg CreateRegistrationParams) (Registration, error) {
+	row := q.db.QueryRow(ctx, createRegistration,
+		arg.RegistrationNumber,
+		arg.CourseID,
+		arg.FullName,
+		arg.Email,
+		arg.Mobile,
+	)
+	var i Registration
+	err := row.Scan(
+		&i.ID,
+		&i.RegistrationNumber,
+		&i.CourseID,
+		&i.FullName,
+		&i.Email,
+		&i.Mobile,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getAdmission = `-- name: GetAdmission :one
-SELECT id, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, status, created_at, updated_at FROM admissions
+SELECT id, registration_number, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, aadhar_card_url, father_aadhar_card_url, tenth_marksheet_url, twelfth_marksheet_url, status, created_at, updated_at FROM admissions
 WHERE id = $1 LIMIT 1
 `
 
@@ -158,6 +220,7 @@ func (q *Queries) GetAdmission(ctx context.Context, id int32) (Admission, error)
 	var i Admission
 	err := row.Scan(
 		&i.ID,
+		&i.RegistrationNumber,
 		&i.CourseID,
 		&i.FullName,
 		&i.FatherName,
@@ -173,6 +236,10 @@ func (q *Queries) GetAdmission(ctx context.Context, id int32) (Admission, error)
 		&i.DomicileState,
 		&i.Mobile,
 		&i.Email,
+		&i.AadharCardUrl,
+		&i.FatherAadharCardUrl,
+		&i.TenthMarksheetUrl,
+		&i.TwelfthMarksheetUrl,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,
@@ -222,8 +289,65 @@ func (q *Queries) GetPaymentByOrderID(ctx context.Context, orderID string) (Paym
 	return i, err
 }
 
+const getRegistrationByEmail = `-- name: GetRegistrationByEmail :one
+SELECT id, registration_number, course_id, full_name, email, mobile, created_at FROM registrations
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetRegistrationByEmail(ctx context.Context, email string) (Registration, error) {
+	row := q.db.QueryRow(ctx, getRegistrationByEmail, email)
+	var i Registration
+	err := row.Scan(
+		&i.ID,
+		&i.RegistrationNumber,
+		&i.CourseID,
+		&i.FullName,
+		&i.Email,
+		&i.Mobile,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getRegistrationByNumber = `-- name: GetRegistrationByNumber :one
+SELECT id, registration_number, course_id, full_name, email, mobile, created_at FROM registrations
+WHERE registration_number = $1 LIMIT 1
+`
+
+func (q *Queries) GetRegistrationByNumber(ctx context.Context, registrationNumber string) (Registration, error) {
+	row := q.db.QueryRow(ctx, getRegistrationByNumber, registrationNumber)
+	var i Registration
+	err := row.Scan(
+		&i.ID,
+		&i.RegistrationNumber,
+		&i.CourseID,
+		&i.FullName,
+		&i.Email,
+		&i.Mobile,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getRegistrationCountForCourseAndYear = `-- name: GetRegistrationCountForCourseAndYear :one
+SELECT COUNT(*) FROM registrations
+WHERE course_id = $1 AND registration_number LIKE $2
+`
+
+type GetRegistrationCountForCourseAndYearParams struct {
+	CourseID           int32  `json:"course_id"`
+	RegistrationNumber string `json:"registration_number"`
+}
+
+func (q *Queries) GetRegistrationCountForCourseAndYear(ctx context.Context, arg GetRegistrationCountForCourseAndYearParams) (int64, error) {
+	row := q.db.QueryRow(ctx, getRegistrationCountForCourseAndYear, arg.CourseID, arg.RegistrationNumber)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const listAdmissions = `-- name: ListAdmissions :many
-SELECT id, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, status, created_at, updated_at FROM admissions
+SELECT id, registration_number, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, aadhar_card_url, father_aadhar_card_url, tenth_marksheet_url, twelfth_marksheet_url, status, created_at, updated_at FROM admissions
 ORDER BY created_at DESC
 `
 
@@ -238,6 +362,7 @@ func (q *Queries) ListAdmissions(ctx context.Context) ([]Admission, error) {
 		var i Admission
 		if err := rows.Scan(
 			&i.ID,
+			&i.RegistrationNumber,
 			&i.CourseID,
 			&i.FullName,
 			&i.FatherName,
@@ -253,6 +378,10 @@ func (q *Queries) ListAdmissions(ctx context.Context) ([]Admission, error) {
 			&i.DomicileState,
 			&i.Mobile,
 			&i.Email,
+			&i.AadharCardUrl,
+			&i.FatherAadharCardUrl,
+			&i.TenthMarksheetUrl,
+			&i.TwelfthMarksheetUrl,
 			&i.Status,
 			&i.CreatedAt,
 			&i.UpdatedAt,
@@ -302,7 +431,7 @@ UPDATE admissions
 SET status = $2,
     updated_at = NOW()
 WHERE id = $1
-RETURNING id, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, status, created_at, updated_at
+RETURNING id, registration_number, course_id, full_name, father_name, mother_name, dob, gender, religion, category, sub_category, caste_certificate_number, is_ews, domicile_certificate_number, domicile_state, mobile, email, aadhar_card_url, father_aadhar_card_url, tenth_marksheet_url, twelfth_marksheet_url, status, created_at, updated_at
 `
 
 type UpdateAdmissionStatusParams struct {
@@ -315,6 +444,7 @@ func (q *Queries) UpdateAdmissionStatus(ctx context.Context, arg UpdateAdmission
 	var i Admission
 	err := row.Scan(
 		&i.ID,
+		&i.RegistrationNumber,
 		&i.CourseID,
 		&i.FullName,
 		&i.FatherName,
@@ -330,6 +460,10 @@ func (q *Queries) UpdateAdmissionStatus(ctx context.Context, arg UpdateAdmission
 		&i.DomicileState,
 		&i.Mobile,
 		&i.Email,
+		&i.AadharCardUrl,
+		&i.FatherAadharCardUrl,
+		&i.TenthMarksheetUrl,
+		&i.TwelfthMarksheetUrl,
 		&i.Status,
 		&i.CreatedAt,
 		&i.UpdatedAt,

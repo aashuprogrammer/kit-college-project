@@ -11,9 +11,13 @@ import (
 type Querier interface {
 	CreateAdmission(ctx context.Context, arg CreateAdmissionParams) (Admission, error)
 	CreatePayment(ctx context.Context, arg CreatePaymentParams) (Payment, error)
+	CreateRegistration(ctx context.Context, arg CreateRegistrationParams) (Registration, error)
 	GetAdmission(ctx context.Context, id int32) (Admission, error)
 	GetCourse(ctx context.Context, id int32) (Course, error)
 	GetPaymentByOrderID(ctx context.Context, orderID string) (Payment, error)
+	GetRegistrationByEmail(ctx context.Context, email string) (Registration, error)
+	GetRegistrationByNumber(ctx context.Context, registrationNumber string) (Registration, error)
+	GetRegistrationCountForCourseAndYear(ctx context.Context, arg GetRegistrationCountForCourseAndYearParams) (int64, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	ListAdmissions(ctx context.Context) ([]Admission, error)
 	ListCourses(ctx context.Context) ([]Course, error)

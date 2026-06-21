@@ -10,6 +10,7 @@ import (
 
 type Admission struct {
 	ID                        int32              `json:"id"`
+	RegistrationNumber        string             `json:"registration_number"`
 	CourseID                  int32              `json:"course_id"`
 	FullName                  string             `json:"full_name"`
 	FatherName                string             `json:"father_name"`
@@ -25,6 +26,10 @@ type Admission struct {
 	DomicileState             string             `json:"domicile_state"`
 	Mobile                    string             `json:"mobile"`
 	Email                     string             `json:"email"`
+	AadharCardUrl             string             `json:"aadhar_card_url"`
+	FatherAadharCardUrl       string             `json:"father_aadhar_card_url"`
+	TenthMarksheetUrl         string             `json:"tenth_marksheet_url"`
+	TwelfthMarksheetUrl       string             `json:"twelfth_marksheet_url"`
 	Status                    string             `json:"status"`
 	CreatedAt                 pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt                 pgtype.Timestamptz `json:"updated_at"`
@@ -50,6 +55,16 @@ type Payment struct {
 	TransactionTime  pgtype.Timestamptz `json:"transaction_time"`
 	CreatedAt        pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt        pgtype.Timestamptz `json:"updated_at"`
+}
+
+type Registration struct {
+	ID                 int32              `json:"id"`
+	RegistrationNumber string             `json:"registration_number"`
+	CourseID           int32              `json:"course_id"`
+	FullName           string             `json:"full_name"`
+	Email              string             `json:"email"`
+	Mobile             string             `json:"mobile"`
+	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 }
 
 type User struct {
